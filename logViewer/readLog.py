@@ -3,6 +3,7 @@ import re
 import plotly.graph_objs as go
 import base64
 import subprocess
+from datetime import datetime
 
 # === CONFIGURATION ===
 ROBOT_HOST = "raspitronik.local"
@@ -105,7 +106,7 @@ else:
     raise ValueError("Choix invalide")
 
 # === Traitement du fichier choisi ===
-coord_pattern = re.compile(r'get_coordinates\s*:\s*x\s*(-?\d+),\s*y\s*(-?\d+),')
+coord_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}).*get_coordinates\s*:\s*x\s*(-?\d+),\s*y\s*(-?\d+)')
 
 event_patterns = [
     {
@@ -139,27 +140,40 @@ event_patterns = [
 
 x_coords = []
 y_coords = []
+times = []
 
 event_points = {event["name"]: [] for event in event_patterns}
 
 last_position = None
+t0 = None
 
-# Lecture du log
 with open(log_file_path, 'r') as f:
     for line in f:
         coord_match = coord_pattern.search(line)
         if coord_match:
-            last_position = (int(coord_match.group(1)), int(coord_match.group(2)))
-            x_coords.append(last_position[0])
-            y_coords.append(last_position[1])
+            timestamp_str = coord_match.group(1)
+            x = int(coord_match.group(2))
+            y = int(coord_match.group(3))
+            ts = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+            if t0 is None:
+                t0 = ts
+                t_sec = 0.0
+            else:
+                t_sec = (ts - t0).total_seconds()
+            last_position = (x, y)
+            x_coords.append(x)
+            y_coords.append(y)
+            times.append(t_sec)
             continue
 
         for event in event_patterns:
             match = event["pattern"].search(line)
-            if match and last_position:
+            if match and last_position and t0:
                 label = match.group(1).strip()
-                event_points[event["name"]].append((last_position[0], last_position[1], label))
-                break  # évite qu'une ligne match plusieurs events
+                event_points[event["name"]].append(
+                    (last_position[0], last_position[1], label)
+                )
+                break
 
 # === Traces Plotly ===
 
@@ -193,7 +207,7 @@ for event in event_patterns:
 all_traces = [trace_path] + event_traces
 
 
-image_path = "../../stategie/2025/Vinyl.svg"
+image_path = "../../ressource/table.svg"
 
 # Charger et encoder le fichier SVG
 with open(image_path, "r", encoding="utf-8") as svg_file:

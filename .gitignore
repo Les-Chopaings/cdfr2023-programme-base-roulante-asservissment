@@ -5,6 +5,7 @@
 .vscode/ipch
 .vscode/*
 .logCache
+venv
 
 teleplot*
 
