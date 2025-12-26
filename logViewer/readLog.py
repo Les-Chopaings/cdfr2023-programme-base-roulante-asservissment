@@ -180,12 +180,11 @@ def annaliseLog(choice):
                     break
 
     # === Traces Plotly ===
-
     # Trace principale du chemin
     trace_path = go.Scatter(
         y=x_coords,
         x=y_coords,
-        mode='lines+markers',
+        mode='lines',
         name='Trajet',
         line=dict(color='blue')
     )
@@ -206,91 +205,136 @@ def annaliseLog(choice):
             hoverinfo='text'
         )
         event_traces.append(trace)
+    # =========================
+    # TRACE DU ROBOT (ANIMÉE)
+    # =========================
+    robot_trace = go.Scatter(
+        x=[y_coords[0]],
+        y=[x_coords[0]],
+        mode='markers',
+        marker=dict(color='red', size=12),
+        name='Robot'
+    )
 
-    # Frames : une frame par position du robot
+    # =========================
+    # FRAMES (uniquement si le temps change)
+    # =========================
     frames = []
     last_time = None
+    robot_trace_index = len([trace_path] + event_traces)  # index exact du robot
+
     for i in range(len(x_coords)):
         if times[i] != last_time:
-            frame = go.Frame(
-                data=[go.Scatter(
-                    y=[x_coords[i]],
-                    x=[y_coords[i]],
-                    mode='markers',
-                    marker=dict(color='red', size=12)
-                )],
-                name=str(i)
+            frames.append(
+                go.Frame(
+                    data=[go.Scatter(
+                        x=[y_coords[i]],
+                        y=[x_coords[i]]
+                    )],
+                    traces=[robot_trace_index],  # ⚠️ TRÈS IMPORTANT
+                    name=str(i)
+                )
             )
-            frames.append(frame)
             last_time = times[i]
 
-    # Slider pour la barre de progression
+    # =========================
+    # SLIDER (barre d'avancement)
+    # =========================
     slider = [dict(
         active=0,
         steps=[
-            dict(label=str(i),
+            dict(
+                label=f"{times[int(frame.name)]:.1f}s",
                 method="animate",
-                args=[[str(i)], {"frame": {"duration": 0, "redraw": True},
-                                "mode": "immediate"}])
-            for i in range(len(frames))
+                args=[
+                    [frame.name],
+                    {"mode": "immediate",
+                    "frame": {"duration": 0, "redraw": False},
+                    "transition": {"duration": 0}}
+                ]
+            )
+            for frame in frames
         ],
-        x=0, y=0, len=1.0
+        x=0.1,
+        y=0,
+        len=0.8
     )]
 
+    # =========================
+    # IMAGE DE FOND (SVG)
+    # =========================
     image_path = "../../../ressource/table.svg"
     with open(image_path, "r", encoding="utf-8") as svg_file:
         svg_content = svg_file.read()
-        encoded_svg = base64.b64encode(svg_content.encode("utf-8")).decode()
-    image_base64 = "data:image/svg+xml;base64," + encoded_svg
+    image_base64 = "data:image/svg+xml;base64," + base64.b64encode(
+        svg_content.encode("utf-8")
+    ).decode()
 
-    # Layout avec boutons de contrôle
+    # =========================
+    # LAYOUT + CONTROLES
+    # =========================
     layout = go.Layout(
         title='Animation du robot',
         xaxis=dict(title='Y', range=[-1500, 1500], scaleanchor='y'),
         yaxis=dict(title='X', range=[1000, -1000]),
         showlegend=True,
-        images=[
-            dict(
-                source=image_base64,
-                xref="x",
-                yref="y",
-                x=-1500,         # En bas à gauche
-                y=-1000,          # En haut à gauche (Y croissant vers le haut)
-                sizex=3000,
-                sizey=2000,
-                sizing="stretch",
-                opacity=1,
-                layer="below"
-            )
-        ],
+        images=[dict(
+            source=image_base64,
+            xref="x",
+            yref="y",
+            x=-1500,
+            y=-1000,
+            sizex=3000,
+            sizey=2000,
+            sizing="stretch",
+            opacity=1,
+            layer="below"
+        )],
         sliders=slider,
         updatemenus=[dict(
             type="buttons",
             showactive=True,
-            x=1.05, y=0.5,
+            x=1.05,
+            y=0.5,
             buttons=[
-                dict(label="Play x1",
+                dict(
+                    label="▶ x1",
                     method="animate",
-                    args=[None, {"frame": {"duration": 100, "redraw": True},
-                                "fromcurrent": True, "transition": {"duration": 0}}]),
-                dict(label="Play x2",
+                    args=[None, {
+                        "frame": {"duration": 100, "redraw": True},
+                        "fromcurrent": True,
+                        "transition": {"duration": 0}
+                    }]
+                ),
+                dict(
+                    label="▶ x2",
                     method="animate",
-                    args=[None, {"frame": {"duration": 50, "redraw": True},
-                                "fromcurrent": True, "transition": {"duration": 0}}]),
-                dict(label="Pause",
+                    args=[None, {
+                        "frame": {"duration": 50, "redraw": True},
+                        "fromcurrent": True,
+                        "transition": {"duration": 0}
+                    }]
+                ),
+                dict(
+                    label="⏸ Pause",
                     method="animate",
-                    args=[[None], {"frame": {"duration": 0, "redraw": False},
-                                    "mode": "immediate",
-                                    "transition": {"duration": 0}}])
+                    args=[[None], {
+                        "mode": "immediate",
+                        "frame": {"duration": 0, "redraw": False},
+                        "transition": {"duration": 0}
+                    }]
+                )
             ]
         )]
     )
 
-    # Figure finale
+    # =========================
+    # FIGURE FINALE
+    # =========================
     fig = go.Figure(
-        data=[trace_path] + event_traces,
+        data=[trace_path] + event_traces + [robot_trace],
         layout=layout,
-        frames=[go.Frame(data=frame.data, name=str(i)) for i, frame in enumerate(frames)]
+        frames=frames
     )
 
     fig.show()
