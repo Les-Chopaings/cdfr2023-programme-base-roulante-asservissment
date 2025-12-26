@@ -99,7 +99,7 @@ def selectLogFile():
     return choice
 
 # === Traitement du fichier choisi ===
-coord_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}).*get_coordinates\s*:\s*x\s*(-?\d+),\s*y\s*(-?\d+)')
+coord_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}).*get_coordinates\s*:\s*x\s*(-?\d+),\s*y\s*(-?\d+),\s*theta\s*(-?\d+)')
 
 event_patterns = [
     {
@@ -144,6 +144,7 @@ def annaliseLog(choice):
 
     x_coords = []
     y_coords = []
+    theta_coords = []
     times = []
 
     event_points = {event["name"]: [] for event in event_patterns}
@@ -158,6 +159,7 @@ def annaliseLog(choice):
                 timestamp_str = coord_match.group(1)
                 x = int(coord_match.group(2))
                 y = int(coord_match.group(3))
+                theta = int(coord_match.group(3))
                 ts = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
                 if t0 is None:
                     t0 = ts
@@ -167,6 +169,7 @@ def annaliseLog(choice):
                 last_position = (x, y)
                 x_coords.append(x)
                 y_coords.append(y)
+                theta_coords.append(theta)
                 times.append(t_sec)
                 continue
 
@@ -227,11 +230,8 @@ def annaliseLog(choice):
         if times[i] != last_time:
             frames.append(
                 go.Frame(
-                    data=[go.Scatter(
-                        x=[y_coords[i]],
-                        y=[x_coords[i]]
-                    )],
-                    traces=[robot_trace_index],  # ⚠️ TRÈS IMPORTANT
+                    data=[dict(x=[y_coords[i]], y=[x_coords[i]])],
+                    traces=[robot_trace_index],
                     name=str(i)
                 )
             )
@@ -301,13 +301,13 @@ def annaliseLog(choice):
                     label="▶ x1",
                     method="animate",
                     args=[None, {
-                        "frame": {"duration": 100, "redraw": True},
+                        "frame": {"duration": 1000, "redraw": True},
                         "fromcurrent": True,
                         "transition": {"duration": 0}
                     }]
                 ),
                 dict(
-                    label="▶ x2",
+                    label="▶ xX",
                     method="animate",
                     args=[None, {
                         "frame": {"duration": 50, "redraw": True},
