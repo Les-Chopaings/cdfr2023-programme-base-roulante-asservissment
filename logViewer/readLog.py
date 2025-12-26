@@ -4,6 +4,7 @@ import plotly.graph_objs as go
 import base64
 import subprocess
 from datetime import datetime
+import argparse
 
 # === CONFIGURATION ===
 ROBOT_HOST = "raspitronik.local"
@@ -83,27 +84,19 @@ def fetch_remote_file(filename):
 
 # === INTERACTION UTILISATEUR ===
 
-print("Fichiers distants disponibles sur le robot :")
-remote_files = list_remote_logs()
-for num, fname in remote_files:
-    print(f"[R{num}] {fname}")
+def selectLogFile():
+    print("Fichiers distants disponibles sur le robot :")
+    remote_files = list_remote_logs()
+    for num, fname in remote_files:
+        print(f"[R{num}] {fname}")
 
-print("\nFichiers locaux disponibles dans .logCache :")
-local_files = list_local_logs()
-for num, fname in local_files:
-    print(f"[L{num}] {fname}")
+    print("\nFichiers locaux disponibles dans .logCache :")
+    local_files = list_local_logs()
+    for num, fname in local_files:
+        print(f"[L{num}] {fname}")
 
-choice = input("\nChoisissez un fichier ([L<num>] ou [R<num>]) : ")
-selected_file = "asserv_" + choice[1:] + ".log"
-
-
-if choice.startswith("L"):
-    log_file_path = os.path.join(LOCAL_CACHE_DIR, selected_file)
-elif choice.startswith("R"):
-    log_file_path = fetch_remote_file(selected_file)
-    print(f"Fichier '{selected_file}' copié depuis le robot.")
-else:
-    raise ValueError("Choix invalide")
+    choice = input("\nChoisissez un fichier ([L<num>] ou [R<num>]) : ")
+    return choice
 
 # === Traitement du fichier choisi ===
 coord_pattern = re.compile(r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}).*get_coordinates\s*:\s*x\s*(-?\d+),\s*y\s*(-?\d+)')
@@ -138,105 +131,136 @@ event_patterns = [
 
 # Variables pour stocker les données
 
-x_coords = []
-y_coords = []
-times = []
+def annaliseLog(choice):
+    selected_file = "asserv_" + choice[1:] + ".log"
 
-event_points = {event["name"]: [] for event in event_patterns}
+    if choice.startswith("L"):
+        log_file_path = os.path.join(LOCAL_CACHE_DIR, selected_file)
+    elif choice.startswith("R"):
+        log_file_path = fetch_remote_file(selected_file)
+        print(f"Fichier '{selected_file}' copié depuis le robot.")
+    else:
+        raise ValueError("Choix invalide")
 
-last_position = None
-t0 = None
+    x_coords = []
+    y_coords = []
+    times = []
 
-with open(log_file_path, 'r') as f:
-    for line in f:
-        coord_match = coord_pattern.search(line)
-        if coord_match:
-            timestamp_str = coord_match.group(1)
-            x = int(coord_match.group(2))
-            y = int(coord_match.group(3))
-            ts = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
-            if t0 is None:
-                t0 = ts
-                t_sec = 0.0
-            else:
-                t_sec = (ts - t0).total_seconds()
-            last_position = (x, y)
-            x_coords.append(x)
-            y_coords.append(y)
-            times.append(t_sec)
-            continue
+    event_points = {event["name"]: [] for event in event_patterns}
 
-        for event in event_patterns:
-            match = event["pattern"].search(line)
-            if match and last_position and t0:
-                label = match.group(1).strip()
-                event_points[event["name"]].append(
-                    (last_position[0], last_position[1], label)
-                )
-                break
+    last_position = None
+    t0 = None
 
-# === Traces Plotly ===
+    with open(log_file_path, 'r') as f:
+        for line in f:
+            coord_match = coord_pattern.search(line)
+            if coord_match:
+                timestamp_str = coord_match.group(1)
+                x = int(coord_match.group(2))
+                y = int(coord_match.group(3))
+                ts = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S")
+                if t0 is None:
+                    t0 = ts
+                    t_sec = 0.0
+                else:
+                    t_sec = (ts - t0).total_seconds()
+                last_position = (x, y)
+                x_coords.append(x)
+                y_coords.append(y)
+                times.append(t_sec)
+                continue
 
-# Trace principale du chemin
-trace_path = go.Scatter(
-    y=x_coords,
-    x=y_coords,
-    mode='lines+markers',
-    name='Trajet',
-    line=dict(color='blue')
-)
+            for event in event_patterns:
+                match = event["pattern"].search(line)
+                if match and last_position and t0:
+                    label = match.group(1).strip()
+                    event_points[event["name"]].append(
+                        (last_position[0], last_position[1], label)
+                    )
+                    break
 
-# Traces dynamiques pour les événements
-event_traces = []
-for event in event_patterns:
-    points = event_points[event["name"]]
-    if not points:
-        continue
-    trace = go.Scatter(
-        y=[p[0] for p in points],
-        x=[p[1] for p in points],
-        mode='markers',
-        name=event["name"],
-        marker=dict(color=event["color"], size=10, symbol=event["symbol"]),
-        text=[p[2] for p in points],
-        hoverinfo='text'
+    # === Traces Plotly ===
+
+    # Trace principale du chemin
+    trace_path = go.Scatter(
+        y=x_coords,
+        x=y_coords,
+        mode='lines+markers',
+        name='Trajet',
+        line=dict(color='blue')
     )
-    event_traces.append(trace)
 
-# Liste finale des traces à passer à go.Figure(data=...)
-all_traces = [trace_path] + event_traces
-
-
-image_path = "../../ressource/table.svg"
-
-# Charger et encoder le fichier SVG
-with open(image_path, "r", encoding="utf-8") as svg_file:
-    svg_content = svg_file.read()
-    encoded_svg = base64.b64encode(svg_content.encode("utf-8")).decode()
-
-# Créer l'URL base64 pour image SVG
-image_base64 = "data:image/svg+xml;base64," + encoded_svg
-
-# Layout avec l'image encodée
-layout = go.Layout(
-    title='Trajet avec commandes',
-    xaxis=dict(title='Y', range=[-1500, 1500], scaleanchor='y'),
-    yaxis=dict(title='X', range=[ 1000,-1000]),
-    showlegend=True,
-    images=[
-        dict(
-            source=image_base64,
-            xref="x",
-            yref="y",
-            x=-1500,         # En bas à gauche
-            y=-1000,          # En haut à gauche (Y croissant vers le haut)
-            sizex=3000,
-            sizey=2000,
-            sizing="stretch",
-            opacity=1,
-            layer="below"
+    # Traces dynamiques pour les événements
+    event_traces = []
+    for event in event_patterns:
+        points = event_points[event["name"]]
+        if not points:
+            continue
+        trace = go.Scatter(
+            y=[p[0] for p in points],
+            x=[p[1] for p in points],
+            mode='markers',
+            name=event["name"],
+            marker=dict(color=event["color"], size=10, symbol=event["symbol"]),
+            text=[p[2] for p in points],
+            hoverinfo='text'
         )
-    ]
-)
-fig = go.Figure(data=all_traces, layout=layout)
-fig.show()
+        event_traces.append(trace)
+
+    # Liste finale des traces à passer à go.Figure(data=...)
+    all_traces = [trace_path] + event_traces
+
+
+    image_path = "../../../ressource/table.svg"
+
+    # Charger et encoder le fichier SVG
+    with open(image_path, "r", encoding="utf-8") as svg_file:
+        svg_content = svg_file.read()
+        encoded_svg = base64.b64encode(svg_content.encode("utf-8")).decode()
+
+    # Créer l'URL base64 pour image SVG
+    image_base64 = "data:image/svg+xml;base64," + encoded_svg
+
+    # Layout avec l'image encodée
+    layout = go.Layout(
+        title='Trajet avec commandes',
+        xaxis=dict(title='Y', range=[-1500, 1500], scaleanchor='y'),
+        yaxis=dict(title='X', range=[ 1000,-1000]),
+        showlegend=True,
+        images=[
+            dict(
+                source=image_base64,
+                xref="x",
+                yref="y",
+                x=-1500,         # En bas à gauche
+                y=-1000,          # En haut à gauche (Y croissant vers le haut)
+                sizex=3000,
+                sizey=2000,
+                sizing="stretch",
+                opacity=1,
+                layer="below"
+            )
+        ]
+    )
+    fig = go.Figure(data=all_traces, layout=layout)
+    fig.show()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Lecture de logs")
+
+    parser.add_argument(
+        "log_id",
+        nargs="?",  # rend l'argument optionnel
+        help="ID du log à lire (ex: L1295)"
+    )
+    args = parser.parse_args()
+
+    if args.log_id:
+        log_file_path = f"{args.log_id}"
+        annaliseLog(log_file_path)
+    else:
+        annaliseLog(selectLogFile())
+
+if __name__ == "__main__":
+    main()
