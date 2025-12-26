@@ -207,25 +207,47 @@ def annaliseLog(choice):
         )
         event_traces.append(trace)
 
-    # Liste finale des traces à passer à go.Figure(data=...)
-    all_traces = [trace_path] + event_traces
+    # Frames : une frame par position du robot
+    frames = []
+    last_time = None
+    for i in range(len(x_coords)):
+        if times[i] != last_time:
+            frame = go.Frame(
+                data=[go.Scatter(
+                    y=[x_coords[i]],
+                    x=[y_coords[i]],
+                    mode='markers',
+                    marker=dict(color='red', size=12)
+                )],
+                name=str(i)
+            )
+            frames.append(frame)
+            last_time = times[i]
 
+    # Slider pour la barre de progression
+    slider = [dict(
+        active=0,
+        steps=[
+            dict(label=str(i),
+                method="animate",
+                args=[[str(i)], {"frame": {"duration": 0, "redraw": True},
+                                "mode": "immediate"}])
+            for i in range(len(frames))
+        ],
+        x=0, y=0, len=1.0
+    )]
 
     image_path = "../../../ressource/table.svg"
-
-    # Charger et encoder le fichier SVG
     with open(image_path, "r", encoding="utf-8") as svg_file:
         svg_content = svg_file.read()
         encoded_svg = base64.b64encode(svg_content.encode("utf-8")).decode()
-
-    # Créer l'URL base64 pour image SVG
     image_base64 = "data:image/svg+xml;base64," + encoded_svg
 
-    # Layout avec l'image encodée
+    # Layout avec boutons de contrôle
     layout = go.Layout(
-        title='Trajet avec commandes',
+        title='Animation du robot',
         xaxis=dict(title='Y', range=[-1500, 1500], scaleanchor='y'),
-        yaxis=dict(title='X', range=[ 1000,-1000]),
+        yaxis=dict(title='X', range=[1000, -1000]),
         showlegend=True,
         images=[
             dict(
@@ -240,9 +262,37 @@ def annaliseLog(choice):
                 opacity=1,
                 layer="below"
             )
-        ]
+        ],
+        sliders=slider,
+        updatemenus=[dict(
+            type="buttons",
+            showactive=True,
+            x=1.05, y=0.5,
+            buttons=[
+                dict(label="Play x1",
+                    method="animate",
+                    args=[None, {"frame": {"duration": 100, "redraw": True},
+                                "fromcurrent": True, "transition": {"duration": 0}}]),
+                dict(label="Play x2",
+                    method="animate",
+                    args=[None, {"frame": {"duration": 50, "redraw": True},
+                                "fromcurrent": True, "transition": {"duration": 0}}]),
+                dict(label="Pause",
+                    method="animate",
+                    args=[[None], {"frame": {"duration": 0, "redraw": False},
+                                    "mode": "immediate",
+                                    "transition": {"duration": 0}}])
+            ]
+        )]
     )
-    fig = go.Figure(data=all_traces, layout=layout)
+
+    # Figure finale
+    fig = go.Figure(
+        data=[trace_path] + event_traces,
+        layout=layout,
+        frames=[go.Frame(data=frame.data, name=str(i)) for i, frame in enumerate(frames)]
+    )
+
     fig.show()
 
 
