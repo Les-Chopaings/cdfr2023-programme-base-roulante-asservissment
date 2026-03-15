@@ -38,6 +38,7 @@ void usartprintf(const char* format, ...) {
     int size = vsnprintf(buffer, 1000, format, args);
     va_end(args);
     usartSendMessage(USART2,buffer);
+    (void)size;
 #ifdef ENABLE_STM32_LOG_I2C
     logWrite(buffer,size);
 #endif

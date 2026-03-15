@@ -12,7 +12,7 @@
 
 //#define ENABLE_STATISTIC
 //#define OLDROBOT
-#define ENABLE_STM32_LOG_I2C
+//#define ENABLE_STM32_LOG_I2C
 
 //PIN and Port to control the first MotorL
 #define pin_ModeL 			GPIO0
