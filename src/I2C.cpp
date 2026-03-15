@@ -86,13 +86,6 @@ void i2c1_ev_isr(void){
 		reading = 0;
 		sending = 0;
 
-		//TOFIX here a small delay to fix hadware problem on the raspberry pi
-		// https://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html
-		for(int i = 0; i <500; i++){
-			asm("nop");
-		}
-		// end TOFIX
-
 		if(sr2 & I2C_SR2_TRA){
 			communicationType = DIRSEND;
 			if(callbackinitialiseTrans){
@@ -127,6 +120,7 @@ void i2c1_ev_isr(void){
 		i2c_enable_ack(I2C1);
 		if(callbackinitialiseRec && communicationType == DIRRECEIVE){
 			callbacki2cRec(bufrec,reading);
+      //todo
 			sending = 0;
 		}
 	}

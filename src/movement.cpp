@@ -1,6 +1,8 @@
 #include "movement.h"
 #include <atomic>
 
+CircularBuffer<Command, I2CBUFFERCOMMANDENB*3> commandBuffer;
+
 movement::movement(position* pos):Asservissement(pos){
 }
 
@@ -315,7 +317,7 @@ void movement::loop(void){
 }
 
 uint16_t movement::getCommandBufferSize(){
-    return commandBuffer.getUsedSpace() + run;
+    return commandBuffer.getAvailableSpace();
 }
 
 movement::~movement(){

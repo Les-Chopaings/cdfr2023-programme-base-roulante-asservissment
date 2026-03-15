@@ -7,7 +7,6 @@
 #include "Asservissement.h"
 #include "i2c_interface.h"
 #include "button.h"
-#include "calibration.h"
 #include "test.h"
 
 //#define TESTMOTOR
@@ -22,7 +21,7 @@ movement* robotAsservisement = new movement(robotPosition);
 i2c_interface* robotI2cInterface = new i2c_interface(robotPosition, robotAsservisement);
 
 void I2CRecieveData(uint8_t* data, int size){
-    robotI2cInterface->I2CDataSwitch(data,size);
+    robotI2cInterface->I2CDataSwitchDirect(data,size);
 }
 
 
@@ -93,16 +92,16 @@ int main(void)
 //	Main Loop off the robot
 //
 	sequence ledToggleSeq;
-    sequence mySeq;
-    sequence dbg;
-    bool enableDebug = false;
-    bool enableCalibration = false;
+  sequence mySeq;
+  sequence dbg;
+  bool enableDebug = false;
 
     //reset because the stm has been booted for 3 seconds
 	robotAsservisement->reset();
 
 	while (1){
 		robotPosition->loop();
+        robotI2cInterface->loop();
         robotAsservisement->loop();
 
         if(readButton2() && !enableDebug){
@@ -110,19 +109,12 @@ int main(void)
             mySeq.reset();
         }
         else if(enableDebug){
-            rotation10(robotI2cInterface);
-        }
-
-        if(readButton1() && !enableCalibration){
-            enableCalibration = true;
-        }
-        else if(enableCalibration){
-            loopCalibration(robotI2cInterface);
+            testloop(robotI2cInterface);
         }
 
         dbg.interval([](){
-			usartprintf("x : %5lf, y : %5lf, theta : %5lf\n",robotPosition->getPosition_X(),robotPosition->getPosition_Y(),robotPosition->getPosition_Teta());;
-		},1000);
+        usartprintf("x : %5lf, y : %5lf, theta : %5lf\n",robotPosition->getPosition_X(),robotPosition->getPosition_Y(),robotPosition->getPosition_Teta());;
+        },1000);
 
 		//BLINK LED
 		ledToggleSeq.interval([](){

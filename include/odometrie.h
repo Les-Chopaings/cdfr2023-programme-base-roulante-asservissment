@@ -15,7 +15,7 @@
 #include "uart.h"
 #include "AsservissementMath.h"
 
-#define _BUFFERSIZE 50000
+#define _BUFFERSIZE 5000
 
 // theorical distance between the 2 wheel : 298.765mm
 // theorical diametre of the wheel : 39mm

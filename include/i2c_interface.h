@@ -1,21 +1,28 @@
 #pragma once
 
-#include "robot_interface.h"
 #include "movement.h"
 #include "motor.h"
 #include "led.h"
 #include "I2C.h"
 #include "logI2c.h"
+#include "DataPacker.h"
+#include "DataUnpacker.h"
 
-class i2c_interface : public Robot_interface
+struct i2cReadBuffer {
+    int size = 0;
+    uint8_t buffer[I2CBUFFERSIZE];
+};
+
+class i2c_interface
 {
 private:
     position* robotPosition;
     movement* robotAsservisement;
 public:
     i2c_interface(position* inRobotPosition, movement* inRobotAsservisement);
+    void I2CDataSwitchDirect(uint8_t* data, int size);
+    void loop();
 
-    void get_version(uint16_t &part1, uint16_t &part2, uint16_t &part3, uint16_t &part4);
     uint16_t get_log_size();
     void get_log(uint8_t** data, int &length);
     void set_led_1(bool status);
@@ -32,7 +39,7 @@ public:
     void set_linear_max_speed(int16_t max_speed, int16_t max_acceleration = 0, int16_t max_deceleration = 0);
     void set_angular_max_speed(int16_t max_speed, int16_t max_acceleration = 0, int16_t max_deceleration = 0);
     int16_t get_braking_distance();
-    int16_t get_command_buffer_size();
+    int16_t get_command_buffer_size_available();
     Direction get_direction_side();
     Rotation get_rotation_side();
     void get_current_target(int16_t &x, int16_t &y, int16_t &theta);

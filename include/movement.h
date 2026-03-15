@@ -18,7 +18,6 @@ struct Command {
 class movement : public Asservissement
 {
 private:
-    CircularBuffer<Command, 1000> commandBuffer;
     Command currentCommand;
     bool run = false;
 
