@@ -24,7 +24,6 @@ private:
     int loopPeriod = 20;
 
     bool print = false;
-    bool error = false;
 
 protected:
     position* posRobot;
@@ -61,8 +60,6 @@ public:
     Rotation getRotationSide(void);
     Direction getDirectionSide(void);
     position_t getCurrentConsigne(void);
-
-    void checkError(void);
 
     ~Asservissement();
 

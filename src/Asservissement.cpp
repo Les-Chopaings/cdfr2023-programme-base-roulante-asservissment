@@ -105,10 +105,6 @@ void Asservissement::asservissementLoop(){
     //Calculate Linear commande
     if(positionControlLineaire.getPostion()==0){
         valPidLineaire = pidLineaireBlock.update(reduceErrorLinear,timeLastPos);
-        // if(valPidLineaire > 40 || valPidLineaire < -40){
-        //     valPidLineaire = 0;
-        //     error = true;
-        // }
         pidLineaire.reset();
     }
     else{
@@ -119,10 +115,6 @@ void Asservissement::asservissementLoop(){
     //Calculate Angular commande
     if(positionControlAngulaire.getPostion()==0 || reTargetAngle){
         valPidAngulaire = pidAngulaireBlock.update(reduceErrorAngular,timeLastPos);
-        // if(valPidAngulaire > 40 || valPidAngulaire < -40){
-        //     valPidAngulaire = 0;
-        //     error = true;
-        // }
         pidAngulaire.reset();
     }
     else{
@@ -141,7 +133,6 @@ void Asservissement::asservissementLoop(){
 //******************************************************
 
 void Asservissement::setProtectedConsigneAngulaire(double angle, Rotation rotation){
-    checkError();
     if(positionControlLineaire.getPostion()!=0){
         consigne.x = posRobot->getPosition_X();
         consigne.y = posRobot->getPosition_Y();
@@ -160,7 +151,6 @@ void Asservissement::setConsigneAngulaire(double angle, Rotation rotation){
 }
 
 void Asservissement::setProtectedConsigneLineaire(double x, double y){
-    checkError();
     if(positionControlAngulaire.getPostion()!=0){
         consigne.teta = mod_angle(posRobot->getPosition_Teta());
         positionControlAngulaire.setPosition(0);
@@ -178,7 +168,6 @@ void Asservissement::setConsigneLineaire(double x, double y){
 }
 
 void Asservissement::setConsigneLookAt(double x, double y, Rotation rotation){
-    checkError();
     double angleErreur = mod_angle(calculAngle(x,y,posRobot->getPosition())-posRobot->getPosition_Teta());
     if(angleErreur>0 && rotation == Rotation::CLOCKWISE){
         angleErreur -= 360;
@@ -205,12 +194,10 @@ void Asservissement::setConsigneLookAt(double x, double y, Rotation rotation){
 }
 
 void Asservissement::setConsigneLookAtForward(double x, double y, Rotation rotation){
-    checkError();
     setProtectedConsigneAngulaire(calculAngle(x,y,posRobot->getPosition()),rotation);
 }
 
 void Asservissement::setConsigneLookAtBackward(double x, double y, Rotation rotation){
-    checkError();
     setProtectedConsigneAngulaire(mod_angle(calculAngle(x,y,posRobot->getPosition())+180),rotation);
 }
 
@@ -253,13 +240,6 @@ Direction Asservissement::getDirectionSide(void){
     else{
         return Direction::NONE;
     }
-}
-
-void Asservissement::checkError(void){
-    if(error){
-        reset();
-    }
-    error = false;
 }
 
 void Asservissement::reset(void){
