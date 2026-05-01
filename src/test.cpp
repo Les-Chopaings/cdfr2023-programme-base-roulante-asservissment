@@ -99,9 +99,9 @@ int rotation10(i2c_interface* robotI2cInterface){
     robotI2cInterface->set_coordinates(0,0,0);
     robotI2cInterface->set_motor_state(true);
 
-    for(int i = 0; i<10; i++){
+    for(int i = 0; i<1; i++){
         robotI2cInterface->consigne_angulaire(180,Rotation::ANTICLOCKWISE);
-        robotI2cInterface->consigne_angulaire(0,Rotation::ANTICLOCKWISE);
+        //robotI2cInterface->consigne_angulaire(0,Rotation::ANTICLOCKWISE);
     }
 
     DELAY(1);

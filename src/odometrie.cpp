@@ -20,8 +20,8 @@ void odometrieSetup(void){
 	nvic_set_priority(NVIC_EXTI2_IRQ, 0);
 
 	/* Set GPIO0 (in GPIO port A) to 'input open-drain'. */
-	gpio_mode_setup(port_odometrie1R, GPIO_MODE_INPUT, GPIO_MODE_INPUT , pin_odometrie1R);
-	gpio_mode_setup(port_odometrie2R, GPIO_MODE_INPUT, GPIO_MODE_INPUT , pin_odometrie2R);
+	gpio_mode_setup(port_odometrie1R, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP , pin_odometrie1R);
+	gpio_mode_setup(port_odometrie2R, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP , pin_odometrie2R);
 
 	/* Configure the EXTI subsystem. */
 	exti_select_source(EXTI2, port_odometrie1R);
@@ -33,8 +33,8 @@ void odometrieSetup(void){
 	nvic_set_priority(NVIC_EXTI4_IRQ, 1);
 
 	/* Set GPIO0 (in GPIO port A) to 'input open-drain'. */
-	gpio_mode_setup(port_odometrie1L, GPIO_MODE_INPUT, GPIO_MODE_INPUT , pin_odometrie1L);
-	gpio_mode_setup(port_odometrie2L, GPIO_MODE_INPUT, GPIO_MODE_INPUT , pin_odometrie2L);
+	gpio_mode_setup(port_odometrie1L, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP , pin_odometrie1L);
+	gpio_mode_setup(port_odometrie2L, GPIO_MODE_INPUT, GPIO_PUPD_PULLUP , pin_odometrie2L);
 
 	/* Configure the EXTI subsystem. */
 	exti_select_source(EXTI4, port_odometrie1L);

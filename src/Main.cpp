@@ -110,7 +110,7 @@ int main(void)
             mySeq.reset();
         }
         else if(enableDebug){
-            testloop(robotI2cInterface);
+            rotation10(robotI2cInterface);
         }
 
         if(readButton1() && !enableCalibration){
