@@ -317,7 +317,7 @@ void movement::loop(void){
 }
 
 uint16_t movement::getCommandBufferSize(){
-    return commandBuffer.getAvailableSpace();
+    return commandBuffer.getUsedSpace() + run;
 }
 
 movement::~movement(){

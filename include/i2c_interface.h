@@ -39,7 +39,7 @@ public:
     void set_linear_max_speed(int16_t max_speed, int16_t max_acceleration = 0, int16_t max_deceleration = 0);
     void set_angular_max_speed(int16_t max_speed, int16_t max_acceleration = 0, int16_t max_deceleration = 0);
     int16_t get_braking_distance();
-    int16_t get_command_buffer_size_available();
+    int16_t get_command_buffer_size();
     Direction get_direction_side();
     Rotation get_rotation_side();
     void get_current_target(int16_t &x, int16_t &y, int16_t &theta);

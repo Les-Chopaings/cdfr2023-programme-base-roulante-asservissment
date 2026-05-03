@@ -57,7 +57,7 @@ void i2c_interface::I2CDataSwitchDirect(uint8_t* data, int size){
         }
         case 51:{
             int16_t retParam;
-            retParam = get_command_buffer_size_available();
+            retParam = get_command_buffer_size();
             packer.addUint16((int16_t)retParam);
             setReponseBuffer(packer.getData(),packer.getSize());
             break;
@@ -559,8 +559,8 @@ int16_t i2c_interface::get_braking_distance(){
     return (int16_t)robotAsservisement->getBrakingDistance();
 }
 
-int16_t i2c_interface::get_command_buffer_size_available(){
-    return (robotAsservisement->getCommandBufferSize()/3) - i2cCommandBuffer.getUsedSpace() ;
+int16_t i2c_interface::get_command_buffer_size(){
+    return robotAsservisement->getCommandBufferSize();
 }
 
 Direction i2c_interface::get_direction_side(){
