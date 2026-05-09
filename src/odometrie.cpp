@@ -25,7 +25,7 @@ void odometrieSetup(void){
 
 	/* Configure the EXTI subsystem. */
 	exti_select_source(EXTI2, port_odometrie1R);
-	exti_set_trigger(EXTI2, EXTI_TRIGGER_RISING);
+	exti_set_trigger(EXTI2, EXTI_TRIGGER_BOTH);
 	exti_enable_request(EXTI2);
 
     /* Enable EXTI0 interrupt. */
@@ -38,34 +38,52 @@ void odometrieSetup(void){
 
 	/* Configure the EXTI subsystem. */
 	exti_select_source(EXTI4, port_odometrie1L);
-	exti_set_trigger(EXTI4, EXTI_TRIGGER_RISING);
+	exti_set_trigger(EXTI4, EXTI_TRIGGER_BOTH);
 	exti_enable_request(EXTI4);
 }
 
 
 void exti2_isr(void){
     exti_reset_request(EXTI2);
-	gpio_toggle(port_led1,pin_led1);
-	if(gpio_get (port_odometrie2R,pin_odometrie2R)){
-		circularBufferOdo->push(backwardR);
-	}
-	else{
-		//Vers l'avant
-		circularBufferOdo->push(fordwardR);
-	}
+	//gpio_toggle(port_led1,pin_led1);
+    if(gpio_get (port_odometrie1R,pin_odometrie1R)){
+        if(gpio_get (port_odometrie2R,pin_odometrie2R)){
+            circularBufferOdo->push(backwardR);
+        }
+        else{
+            circularBufferOdo->push(fordwardR);
+        }
+    }
+    else{
+        if(gpio_get (port_odometrie2R,pin_odometrie2R)){
+            circularBufferOdo->push(fordwardR);
+        }
+        else{
+            circularBufferOdo->push(backwardR);
+        }
+    }
 }
 
 
 void exti4_isr(void){
 	exti_reset_request(EXTI4);
-    gpio_toggle(port_led1,pin_led1);
-	if(gpio_get (port_odometrie2L,pin_odometrie2L)){
-		//Vers l'avant
-		circularBufferOdo->push(fordwardL);
-	}
-	else{
-		circularBufferOdo->push(backwardL);
-	}
+    //gpio_toggle(port_led1,pin_led1);
+	if(gpio_get (port_odometrie1L,pin_odometrie1L)){
+        if(gpio_get (port_odometrie2L,pin_odometrie2L)){
+            circularBufferOdo->push(fordwardL);
+        }
+        else{
+            circularBufferOdo->push(backwardL);
+        }
+    }
+    else{
+        if(gpio_get (port_odometrie2L,pin_odometrie2L)){
+            circularBufferOdo->push(backwardL);
+        }
+        else{
+            circularBufferOdo->push(fordwardL);
+        }
+    }
 }
 
 
