@@ -5,20 +5,20 @@ Asservissement::Asservissement(position* pos):
     pidLineaire(2,0.000,200),
     pidAngulaire(4,0.0,400),
     pidLineaireBlock(1,0.001,100),
-    pidAngulaireBlock(2,0.001,200)
+    pidAngulaireBlock(2,0.002,200)
 {
     posRobot = pos;
     nextTime =  get_uptime_ms();
     currentState = Rotation::SHORTEST;
 
-    positionControlLineaire.vitesseMaxAv.setRange(0,700);
+    positionControlLineaire.vitesseMaxAv.setRange(0,500);
     positionControlLineaire.accelerationMaxAv.setRange(0,600);
     positionControlLineaire.decelerationMaxAv.setRange(0,600);
-    positionControlLineaire.vitesseMaxAr.setRange(0,700);
+    positionControlLineaire.vitesseMaxAr.setRange(0,500);
     positionControlLineaire.accelerationMaxAr.setRange(0,600);
     positionControlLineaire.decelerationMaxAr.setRange(0,600);
-    positionControlLineaire.decelerationStopAv.setRange(0,1800);
-    positionControlLineaire.decelerationStopAr.setRange(0,1800);
+    positionControlLineaire.decelerationStopAv.setRange(0,1400);
+    positionControlLineaire.decelerationStopAr.setRange(0,1400);
 
     positionControlAngulaire.vitesseMaxAv.setRange(0,200);
     positionControlAngulaire.accelerationMaxAv.setRange(0,200);
