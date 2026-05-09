@@ -139,9 +139,9 @@
     #define CALIBRATION_PLAGE_DIAMETERWHEEL 20.0
 #else
     #define NUMBERSTEPBYROTATION 1200
-    #define DISTANCEWHEEL 291.0 // + => moins tourner
-    #define DIAMETERWHEELD (60.0-2.7+0.0)
-    #define DIAMETERWHEELG (56.5-2.7+0.3) //+ => - theta
+    #define DISTANCEWHEEL 288.8 // + => moins tourner
+    #define DIAMETERWHEELD 60.6
+    #define DIAMETERWHEELG 60.6 //+ => - theta
 
     #define CALIBRATION_START_DISTANCEWHEEL 250.0
     #define CALIBRATION_START_DIAMETERWHEEL 40.0
