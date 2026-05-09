@@ -32,24 +32,24 @@ bool CircularBufferOdo::isEmpty() const {
 
 
 bool CircularBufferOdo::push(uint8_t data) {
-    // if(m_freezePush){
-    //     return false;
-    // }
+    if(m_freezePush){
+        return false;
+    }
 
     //buffer is large, optimisation not needed
-    // if(m_startBuffer == m_size){
-    //     m_validRedord = false;
-    // }
+    if(m_startBuffer == m_size){
+        m_validRedord = false;
+    }
 
-    // if (data > 3) {
-    //     usartprintf("Erreur: données hors limites (doivent être sur 2 bits).\n");
-    //     return false;
-    // }
+    if (data > 3) {
+        usartprintf("Erreur: données hors limites (doivent être sur 2 bits).\n");
+        return false;
+    }
 
-    // if (isFull()) {
-    //     usartprintf("Erreur: Buffer plein.\n");
-    //     return false;
-    // }
+    if (isFull()) {
+        usartprintf("Erreur: Buffer plein.\n");
+        return false;
+    }
 
 #ifdef OPTIMIZE_BUFFER
     //erase and write the 2 bit
