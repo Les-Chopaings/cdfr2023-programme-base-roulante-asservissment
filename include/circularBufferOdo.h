@@ -2,7 +2,8 @@
 #include "uart.h"
 #include <cstdint>
 
-#define OPTIMIZE_BUFFER
+//THIS FEATURE DOESN'T WORKS
+//#define OPTIMIZE_BUFFER
 
 #define NB_RECORD_SECTION 8
 
