@@ -45,21 +45,28 @@ void odometrieSetup(void){
 
 void exti2_isr(void){
     exti_reset_request(EXTI2);
-	//gpio_toggle(port_led1,pin_led1);
+    static bool prev = false;
+	gpio_toggle(port_led1,pin_led1);
     if(gpio_get (port_odometrie1R,pin_odometrie1R)){
-        if(gpio_get (port_odometrie2R,pin_odometrie2R)){
-            circularBufferOdo->push(backwardR);
-        }
-        else{
-            circularBufferOdo->push(fordwardR);
+        if(prev == false){
+            prev = true;
+            if(gpio_get (port_odometrie2R,pin_odometrie2R)){
+                circularBufferOdo->push(backwardR);
+            }
+            else{
+                circularBufferOdo->push(fordwardR);
+            }
         }
     }
     else{
-        if(gpio_get (port_odometrie2R,pin_odometrie2R)){
-            circularBufferOdo->push(fordwardR);
-        }
-        else{
-            circularBufferOdo->push(backwardR);
+        if(prev == true){
+            prev = false;
+            if(gpio_get (port_odometrie2R,pin_odometrie2R)){
+                circularBufferOdo->push(fordwardR);
+            }
+            else{
+                circularBufferOdo->push(backwardR);
+            }
         }
     }
 }
@@ -67,21 +74,28 @@ void exti2_isr(void){
 
 void exti4_isr(void){
 	exti_reset_request(EXTI4);
-    //gpio_toggle(port_led1,pin_led1);
+    static bool prev = false;
+    gpio_toggle(port_led1,pin_led1);
 	if(gpio_get (port_odometrie1L,pin_odometrie1L)){
-        if(gpio_get (port_odometrie2L,pin_odometrie2L)){
-            circularBufferOdo->push(fordwardL);
-        }
-        else{
-            circularBufferOdo->push(backwardL);
+        if(prev == false){
+            prev = true;
+            if(gpio_get (port_odometrie2L,pin_odometrie2L)){
+                circularBufferOdo->push(fordwardL);
+            }
+            else{
+                circularBufferOdo->push(backwardL);
+            }
         }
     }
     else{
-        if(gpio_get (port_odometrie2L,pin_odometrie2L)){
-            circularBufferOdo->push(backwardL);
-        }
-        else{
-            circularBufferOdo->push(fordwardL);
+        if(prev == true){
+            prev = false;
+            if(gpio_get (port_odometrie2L,pin_odometrie2L)){
+                circularBufferOdo->push(backwardL);
+            }
+            else{
+                circularBufferOdo->push(fordwardL);
+            }
         }
     }
 }
