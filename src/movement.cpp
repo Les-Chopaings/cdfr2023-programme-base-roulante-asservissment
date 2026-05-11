@@ -278,10 +278,15 @@ void movement::loop(void){
 
     if(enablePause && !pause){
         Asservissement::setConsigneStop();
+        motorBrakeL(true);
+        motorBrakeR(true);
         pause = true;
     }
 
     if(!enablePause && pause){
+        motorBrakeL(false);
+        motorBrakeR(false);
+        Asservissement::reset();
         launchCommande();
         pause = false;
     }
@@ -312,7 +317,10 @@ void movement::loop(void){
         enablePause = false;
         run = false;
         commandBuffer.resetHead();
-        Asservissement::setConsigneStop();
+        motorBrakeL(false);
+        motorBrakeR(false);
+        Asservissement::reset();
+        //Asservissement::setConsigneStop();
     }
 }
 
