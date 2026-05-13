@@ -46,10 +46,10 @@ void odometrieSetup(void){
 void exti2_isr(void){
     exti_reset_request(EXTI2);
     static bool prev = false;
-	gpio_toggle(port_led1,pin_led1);
     if(gpio_get (port_odometrie1R,pin_odometrie1R)){
         if(prev == false){
             prev = true;
+            gpio_toggle(port_led1,pin_led1);
             if(gpio_get (port_odometrie2R,pin_odometrie2R)){
                 circularBufferOdo->push(backwardR);
             }
@@ -61,6 +61,7 @@ void exti2_isr(void){
     else{
         if(prev == true){
             prev = false;
+            gpio_toggle(port_led1,pin_led1);
             if(gpio_get (port_odometrie2R,pin_odometrie2R)){
                 circularBufferOdo->push(fordwardR);
             }
@@ -75,10 +76,10 @@ void exti2_isr(void){
 void exti4_isr(void){
 	exti_reset_request(EXTI4);
     static bool prev = false;
-    gpio_toggle(port_led1,pin_led1);
 	if(gpio_get (port_odometrie1L,pin_odometrie1L)){
         if(prev == false){
             prev = true;
+            gpio_toggle(port_led2,pin_led2);
             if(gpio_get (port_odometrie2L,pin_odometrie2L)){
                 circularBufferOdo->push(fordwardL);
             }
@@ -90,6 +91,7 @@ void exti4_isr(void){
     else{
         if(prev == true){
             prev = false;
+            gpio_toggle(port_led2,pin_led2);
             if(gpio_get (port_odometrie2L,pin_odometrie2L)){
                 circularBufferOdo->push(backwardL);
             }
